@@ -1,5 +1,7 @@
 from flask import Flask, render_template
 app = Flask(__name__)
+app.add_url_rule('/node_modules/<path:filename>', endpoint='node_modules',
+                 view_func=app.send_static_file)
 
 @app.route("/")
 def hello():
