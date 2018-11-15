@@ -31,6 +31,27 @@ $(function(){
             setTimeout(DisplaySections, 1);
         });
 
+        $('form').on('submit', function(e) {
+            var $form = $(this);
+            var action = $form.attr('action');
+
+            //$.ajax({
+            //    type: "POST",
+            //    url: action,
+            //    data: $form.serialize(),
+            //    success: function(data) {
+            //        $.confirm({
+            //            title: 'Hey there',
+            //            content: 'Hello some text',
+            //            type: 'green',
+            //            typeAnimated: true
+            //        });
+            //    }
+            //});
+
+            //e.preventDefault();
+        });
+
         function DisplaySections() {
             var value = $SelectionMode.val();
 

@@ -6,10 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}"/>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}"/>
 </head>
 <body>
 <div class="container">
+    <div class="alert alert">
+
+    </div>
+
     <h1>Chicken protection</h1>
 
     <div class="alert alert-primary" role="alert">
@@ -38,9 +43,9 @@
             <div class="col-sm-12">
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <label class="input-group-text" for="inputGroupSelectForce">Maintenir la porte</label>
+                        <label class="input-group-text" for="ForceDoorStatus">Maintenir la porte</label>
                     </div>
-                    <select class="custom-select" name="inputGroupSelectForce" id="inputGroupSelectForce">
+                    <select class="custom-select" name="ForceDoorStatus" id="ForceDoorStatus">
                         <option value="1">Fermée</option>
                         <option value="2">Ouverte</option>
                     </select>
@@ -67,7 +72,7 @@
                         <div class="input-group-prepend">
                             <label class="input-group-text" for="OpeningTimeCorrection">Correction de</label>
                         </div>
-                        <input class="form-control" type="number" value="0" step="5" name="OpeningTimeCorrection"
+                        <input class="form-control" type="number" value="{{ config.OpeningTimeCorrection }}" step="5" name="OpeningTimeCorrection"
                                id="OpeningTimeCorrection"/>
                         <div class="input-group-prepend">
                             <span class="input-group-text">minutes</span>
@@ -77,7 +82,7 @@
                         <div class="input-group-prepend">
                             <label class="input-group-text" for="OpeningTime">hh:mm</label>
                         </div>
-                        <input class="form-control" type="time" name="OpeningTime" id="OpeningTime"/>
+                        <input class="form-control" type="time" value="{{ config.OpeningTime }}" name="OpeningTime" id="OpeningTime"/>
                     </div>
                 </div>
             </div>
@@ -89,8 +94,8 @@
                             <label class="input-group-text" for="ClosingMode">Fermeture</label>
                         </div>
                         <select class="custom-select" id="ClosingMode" name="ClosingMode">
-                            <option selected value="1">Au crépuscule</option>
-                            <option value="2">À une heure fixe</option>
+                            <option {% if config.ClosingMode == '1' %}selected{% endif %} value="1">Au crépuscule</option>
+                            <option {% if config.ClosingMode == '2' %}selected{% endif %} value="2">À une heure fixe</option>
                         </select>
                     </div>
                 </div>
@@ -100,13 +105,13 @@
                         <div class="input-group-prepend">
                             <label class="input-group-text" for="ClosingTime">hh:mm</label>
                         </div>
-                        <input class="form-control" type="time" name="ClosingTime" id="ClosingTime"/>
+                        <input class="form-control" type="time" name="ClosingTime" value="{{ config.ClosingTime }}" id="ClosingTime"/>
                     </div>
                     <div class="input-group mb-3" id="ClosingTimeCorrectionSection">
                         <div class="input-group-prepend">
                             <label class="input-group-text" for="ClosingTimeCorrection">Correction de</label>
                         </div>
-                        <input class="form-control" type="number" value="0" step="5" name="ClosingTimeCorrection"
+                        <input class="form-control" type="number" value="{{ config.ClosingTimeCorrection }}" step="5" name="ClosingTimeCorrection"
                                id="ClosingTimeCorrection"/>
                         <div class="input-group-prepend">
                             <span class="input-group-text">minutes</span>
@@ -129,5 +134,6 @@
 <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
 </body>
 </html>
