@@ -33,8 +33,8 @@
                 <label class="input-group-text" for="ProtectionMode">Mode</label>
             </div>
             <select class="custom-select" id="ProtectionMode" name="ProtectionMode">
-                <option selected value="auto">Automatique</option>
-                <option value="manu">Manuel</option>
+                <option {% if config.ProtectionMode == 'Auto' %}selected{% endif %} value="Auto">Automatique</option>
+                <option {% if config.ProtectionMode == 'Manu' %}selected{% endif %} value="Manu">Manuel</option>
             </select>
         </div>
 
@@ -62,8 +62,8 @@
                             <label class="input-group-text" for="OpeningMode">Ouverture</label>
                         </div>
                         <select class="custom-select" name="OpeningMode" id="OpeningMode">
-                            <option selected value="1">À l'aube</option>
-                            <option value="2">À une heure fixe</option>
+                            <option  {% if config.OpeningMode == '1' %}selected{% endif %} value="1">À l'aube</option>
+                            <option  {% if config.OpeningMode == '2' %}selected{% endif %} value="2">À une heure fixe</option>
                         </select>
                     </div>
                 </div>
