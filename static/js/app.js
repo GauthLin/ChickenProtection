@@ -48,6 +48,9 @@ $(function(){
                         ok: {
                             text: "Ok"
                         }
+                    },
+                    onAction: function() {
+                        location.reload();
                     }
                 });
             }

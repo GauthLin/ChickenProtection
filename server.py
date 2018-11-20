@@ -12,7 +12,9 @@ from astral import Astral
 
 configFileName = 'config.ini'
 webserver = Flask(__name__)
-sunrise = sunset = ''
+
+a = Astral()
+city = a['Brussels']
 
 
 class ProtectionMode(Enum):
@@ -20,47 +22,63 @@ class ProtectionMode(Enum):
     Manu = 2
 
 
-class App(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-        self.a = Astral()
-        self.city = self.a['Brussels']
+def run():
+    while True:
+        current_time = datetime.datetime.now()
+        # Si en mode auto
+        if config.get('common', 'mode') == ProtectionMode.Auto.name:
+            opening_mode = config.getint('auto', 'opening_mode')
+            closing_mode = config.getint('auto', 'closing_mode')
+            opening_time = str.split(config.get('auto', 'opening_time'), ':')
+            closing_time = str.split(config.get('auto', 'closing_time'), ':')
 
-    def run(self):
-        while True:
-            current_time = datetime.datetime.now()
-            # Si en mode auto
-            if config.get('common', 'mode') == ProtectionMode.Auto.name:
-                sun = self.city.sun(date=datetime.datetime.now(), local=True)
-                sunrise = sun['sunrise']
-                sunset = sun['sunset']
-                correction_opening = config.getint('auto', 'opening_correction')
-                correction_closing = config.getint('auto', 'closing_correction')
-                opening_mode = config.getint('auto', 'opening_mode')
-                closing_mode = config.getint('auto', 'closing_mode')
-                opening_time = str.split(config.get('auto', 'opening_time'), ':')
-                closing_time = str.split(config.get('auto', 'closing_time'), ':')
+            auto_closing_time = get_closing_datetime()
+            auto_opening_time = get_opening_datetime()
 
-                new_sunrise = sunrise + datetime.timedelta(minutes=correction_opening)
-                new_sunset = sunset + datetime.timedelta(minutes=correction_closing)
+            if ((closing_mode == 1 and current_time.hour >= auto_closing_time.hour and current_time.minute >= auto_closing_time.minute)
+                    or (closing_mode == 2 and current_time.hour >= int(closing_time[0]) and current_time.minute >= int(closing_time[1]))):
+                close_door()
+            elif ((opening_mode == 1 and current_time.hour >= auto_opening_time.hour and current_time.minute >= auto_opening_time.minute)
+                    or (opening_mode == 2 and current_time.hour >= int(opening_time[0]) and current_time.minute >= int(opening_time[1]))):
+                open_door()
+            else:
+                close_door()
+        else:
+            mode = config.getint('manual', 'manual_mode')
+            if mode == 1:
+                close_door()
+            else:
+                open_door()
 
-                # if closing_mode == 1:
-                if ((closing_mode == 1 and current_time.hour >= new_sunset.hour and current_time.minute >= new_sunset.minute)
-                        or (closing_mode == 2 and current_time.hour >= int(closing_time[0]) and current_time.minute >= int(closing_time[1]))):
-                    self.close_door()
-                elif ((opening_mode == 1 and current_time.hour >= new_sunrise.hour and current_time.minute >= new_sunrise.minute)
-                        or (opening_mode == 2 and current_time.hour >= int(opening_time[0]) and current_time.minute >= int(opening_time[1]))):
-                    self.open_door()
-                else:
-                    self.close_door()
+        time.sleep(60)
 
-            time.sleep(60)
 
-    def close_door(self):
-        print('Time to close the door')
+def close_door():
+    print('Time to close the door')
 
-    def open_door(self):
-        print('Time to open the door')
+
+def open_door():
+    print('Time to open the door')
+
+
+def get_sunrise():
+    sun = city.sun(date=datetime.datetime.now(), local=True)
+    return sun['sunrise']
+
+
+def get_sunset():
+    sun = city.sun(date=datetime.datetime.now(), local=True)
+    return sun['sunset']
+
+
+def get_opening_datetime():
+    correction_opening = config.getint('auto', 'opening_correction')
+    return get_sunrise() + datetime.timedelta(minutes=correction_opening)
+
+
+def get_closing_datetime():
+    correction_closing = config.getint('auto', 'closing_correction')
+    return get_sunset() + datetime.timedelta(minutes=correction_closing)
 
 
 @webserver.route("/")
@@ -74,6 +92,14 @@ def index():
         'ClosingTimeCorrection': config.get('auto', "closing_correction"),
         'ClosingTime': config.get('auto', "closing_time"),
         'ForceDoorStatus': config.get('manual', "manual_mode"),
+        'sunrise': {
+            'hour': get_opening_datetime().hour,
+            'minute': "%02d" % get_opening_datetime().minute
+        },
+        'sunset': {
+            'hour': get_closing_datetime().hour,
+            'minute': "%02d" % get_closing_datetime().minute
+        }
     }
     return render_template("index.html", config=dict)
 
@@ -125,7 +151,7 @@ if __name__ == "__main__":
     read_config_file()
 
     # Start the thread parallèle
-    app = App()
+    app = Thread(target=run)
     app.start()
 
     webserver.run(host='0.0.0.0', port=80, debug=config.getboolean('common', 'debug'))

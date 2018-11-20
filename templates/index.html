@@ -46,8 +46,8 @@
                         <label class="input-group-text" for="ForceDoorStatus">Maintenir la porte</label>
                     </div>
                     <select class="custom-select" name="ForceDoorStatus" id="ForceDoorStatus">
-                        <option value="1">Fermée</option>
-                        <option value="2">Ouverte</option>
+                        <option {% if config.ForceDoorStatus == '1' %}selected{% endif %} value="1">Fermée</option>
+                        <option {% if config.ForceDoorStatus == '2' %}selected{% endif %} value="2">Ouverte</option>
                     </select>
                 </div>
             </div>
@@ -85,6 +85,11 @@
                         <input class="form-control" type="time" value="{{ config.OpeningTime }}" name="OpeningTime" id="OpeningTime"/>
                     </div>
                 </div>
+                <div class="col-sm-12">
+                    <div class="alert alert-warning">
+                        La porte s'ouvrira à <strong>{% if config.OpeningMode == '1' %}{{ config.sunrise.hour }}:{{ config.sunrise.minute }}{% else %}{{ config.OpeningTime }}{% endif %}</strong>.
+                    </div>
+                </div>
             </div>
 
             <div class="row">
@@ -116,6 +121,11 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text">minutes</span>
                         </div>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="alert alert-dark">
+                        La porte se fermera à <strong>{% if config.ClosingMode == '1' %}{{ config.sunset.hour }}:{{ config.sunset.minute }}{% else %}{{ config.ClosingTime }}{% endif %}</strong>.
                     </div>
                 </div>
             </div>
