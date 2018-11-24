@@ -9,6 +9,7 @@ import os
 import time
 import datetime
 from astral import Astral
+import RPi.GPIO as GPIO
 
 configFileName = 'config.ini'
 webserver = Flask(__name__)
@@ -54,11 +55,11 @@ def run():
 
 
 def close_door():
-    print('Time to close the door')
+    GPIO.output(config.getint('common', 'pin_number'), GPIO.LOW)
 
 
 def open_door():
-    print('Time to open the door')
+    GPIO.output(config.getint('common', 'pin_number'), GPIO.HIGH)
 
 
 def get_sunrise():
@@ -131,6 +132,7 @@ def read_config_file():
         config.add_section('common')
         config.set('common', 'Mode', ProtectionMode.Auto.name)
         config.set('common', 'Debug', 'false')
+        config.set('common', 'pin_number', '28')
 
         config.add_section('auto')
         config.set('auto', 'opening_mode', '1')
@@ -149,6 +151,9 @@ def read_config_file():
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     read_config_file()
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(config.getint('common', 'pin_number'), GPIO.OUT)
 
     # Start the thread parallèle
     app = Thread(target=run)
