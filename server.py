@@ -36,11 +36,11 @@ def run():
             auto_closing_time = get_closing_datetime()
             auto_opening_time = get_opening_datetime()
 
-            if ((closing_mode == 1 and current_time.hour >= auto_closing_time.hour and current_time.minute >= auto_closing_time.minute)
-                    or (closing_mode == 2 and current_time.hour >= int(closing_time[0]) and current_time.minute >= int(closing_time[1]))):
+            if ((closing_mode == 1 and current_time.time() >= auto_closing_time.time())
+                    or (closing_mode == 2 and current_time.time() >= datetime.time(int(closing_time[0]), int(closing_time[1])))):
                 close_door()
-            elif ((opening_mode == 1 and current_time.hour >= auto_opening_time.hour and current_time.minute >= auto_opening_time.minute)
-                    or (opening_mode == 2 and current_time.hour >= int(opening_time[0]) and current_time.minute >= int(opening_time[1]))):
+            elif ((opening_mode == 1 and current_time.time() >= auto_opening_time.time())
+                    or (opening_mode == 2 and current_time.time() >= datetime.time(int(opening_time[0]), int(opening_time[1])))):
                 open_door()
             else:
                 close_door()
@@ -51,7 +51,7 @@ def run():
             else:
                 open_door()
 
-        time.sleep(60)
+        time.sleep(1)
 
 
 def close_door():
@@ -132,7 +132,7 @@ def read_config_file():
         config.add_section('common')
         config.set('common', 'Mode', ProtectionMode.Auto.name)
         config.set('common', 'Debug', 'false')
-        config.set('common', 'pin_number', '28')
+        config.set('common', 'pin_number', '17')
 
         config.add_section('auto')
         config.set('auto', 'opening_mode', '1')
