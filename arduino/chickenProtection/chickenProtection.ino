@@ -1,5 +1,5 @@
 /// PINS
-#define RPI_PIN   0
+#define RPI_PIN   A0
 #define DOOR_PIN  2
 
 void setup() {
@@ -7,7 +7,7 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(RPI_PIN) > 100) {
+  if (analogRead(RPI_PIN) > 100) {
     openDoor();
   } else {
     closeDoor();

@@ -10,12 +10,16 @@ import time
 import datetime
 from astral import Astral
 import RPi.GPIO as GPIO
+import logging
 
-configFileName = 'config.ini'
+logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', filename='/home/pi/ChickenProtection/chicken_protection.log', level=logging.DEBUG)
+configFileName = '/home/pi/ChickenProtection/config.ini'
 webserver = Flask(__name__)
 
+logging.info('------------- Starting the application ----------------')
 a = Astral()
 city = a['Brussels']
+door_is_opened = False
 
 
 class ProtectionMode(Enum):
@@ -25,41 +29,52 @@ class ProtectionMode(Enum):
 
 def run():
     while True:
-        current_time = datetime.datetime.now()
-        # Si en mode auto
-        if config.get('common', 'mode') == ProtectionMode.Auto.name:
-            opening_mode = config.getint('auto', 'opening_mode')
-            closing_mode = config.getint('auto', 'closing_mode')
-            opening_time = str.split(config.get('auto', 'opening_time'), ':')
-            closing_time = str.split(config.get('auto', 'closing_time'), ':')
+        try:
+            current_time = datetime.datetime.now()
+            # Si en mode auto
+            if config.get('common', 'mode') == ProtectionMode.Auto.name:
+                opening_mode = config.getint('auto', 'opening_mode')
+                closing_mode = config.getint('auto', 'closing_mode')
+                opening_time = str.split(config.get('auto', 'opening_time'), ':')
+                closing_time = str.split(config.get('auto', 'closing_time'), ':')
 
-            auto_closing_time = get_closing_datetime()
-            auto_opening_time = get_opening_datetime()
+                auto_closing_time = get_closing_datetime()
+                auto_opening_time = get_opening_datetime()
 
-            if ((closing_mode == 1 and current_time.time() >= auto_closing_time.time())
-                    or (closing_mode == 2 and current_time.time() >= datetime.time(int(closing_time[0]), int(closing_time[1])))):
-                close_door()
-            elif ((opening_mode == 1 and current_time.time() >= auto_opening_time.time())
-                    or (opening_mode == 2 and current_time.time() >= datetime.time(int(opening_time[0]), int(opening_time[1])))):
-                open_door()
+                if ((closing_mode == 1 and current_time.time() >= auto_closing_time.time())
+                        or (closing_mode == 2 and current_time.time() >= datetime.time(int(closing_time[0]), int(closing_time[1])))):
+                    close_door()
+                elif ((opening_mode == 1 and current_time.time() >= auto_opening_time.time())
+                        or (opening_mode == 2 and current_time.time() >= datetime.time(int(opening_time[0]), int(opening_time[1])))):
+                    open_door()
+                else:
+                    close_door()
             else:
-                close_door()
-        else:
-            mode = config.getint('manual', 'manual_mode')
-            if mode == 1:
-                close_door()
-            else:
-                open_door()
+                mode = config.getint('manual', 'manual_mode')
+                if mode == 1:
+                    close_door()
+                else:
+                    open_door()
+        except Exception as e:
+            logging.exception('Exception in the thread...')
 
         time.sleep(1)
 
 
 def close_door():
+    global door_is_opened
+    if door_is_opened:
+        logging.info('Time to close the door.')
     GPIO.output(config.getint('common', 'pin_number'), GPIO.LOW)
+    door_is_opened = False
 
 
 def open_door():
+    global door_is_opened
+    if not door_is_opened:
+        logging.info('Time to open the door.')
     GPIO.output(config.getint('common', 'pin_number'), GPIO.HIGH)
+    door_is_opened = True
 
 
 def get_sunrise():
@@ -118,6 +133,7 @@ def save():
 
     config.set('manual', 'manual_mode', request.form['ForceDoorStatus'])
     save_config()
+    logging.info('New settings saved.')
     return "saved"
 
 
